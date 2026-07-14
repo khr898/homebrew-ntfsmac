@@ -4,7 +4,7 @@ class Ntfsmac < Formula
   # By default, download the prebuilt CLI binaries and scripts packaged in the GitHub release
   # to make installation extremely fast and robust (no local compiler toolchains required).
   url "https://github.com/khr898/ntfsmac/releases/download/v1.0.140726/ntfsmac-cli.tar.gz"
-  sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  sha256 "3e1306c02318c7d79d6252a1be76983b29479a5e7fc88b187be38cdee358d9b8"
   license "MIT"
 
   # `brew install --HEAD` compiles from the latest main branch source code.
@@ -76,6 +76,14 @@ class Ntfsmac < Formula
   def post_uninstall
     rm_r "#{Dir.home}/.anylinuxfs", force: true
     Dir.glob("#{Dir.home}/Library/Logs/anylinuxfs*.log").each { |f| rm f, force: true }
+  end
+
+  def caveats
+    <<~EOS
+      If you have the standalone anylinuxfs formula installed, link conflicts can be resolved by running:
+        brew unlink anylinuxfs
+        brew link --overwrite ntfsmac
+    EOS
   end
 
   test do
