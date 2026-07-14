@@ -1,35 +1,30 @@
 class Ntfsmac < Formula
   desc "NTFS read/write on Apple Silicon macOS via a libkrun microVM (ntfs-3g over NFS)"
   homepage "https://github.com/khr898/ntfsmac"
+  # By default, download the prebuilt CLI binaries and scripts packaged in the GitHub release
+  # to make installation extremely fast and robust (no local compiler toolchains required).
+  url "https://github.com/khr898/ntfsmac/releases/download/v1.0.140726/ntfsmac-cli.tar.gz"
+  sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
   license "MIT"
-  # Pinned to an exact commit, not the moving `main` branch — every `brew install ntfsmac`
-  # must build a specific, reviewed revision, not whatever happens to be on main at install
-  # time. `revision:` pins Homebrew's git download strategy to this exact commit object
-  # (git's own content-addressing verifies it, no separate sha256 needed the way a tarball
-  # `url`/`sha256` pair would require — there's no tagged release archive to checksum yet).
-  # Bump this alongside every formula update that should track a newer ntfsmac commit.
-  url "https://github.com/khr898/ntfsmac.git",
-      revision: "55eb658a5469b57770039a6c96bea2c05d371522"
-  version "0.1.0-55eb658"
 
-  # `brew install --HEAD` still opts into the old moving-branch behavior for local dev/testing
-  # against latest main — never the default path a real user's `brew install ntfsmac` takes.
-  head "https://github.com/khr898/ntfsmac.git", branch: "main"
+  # `brew install --HEAD` compiles from the latest main branch source code.
+  head do
+    url "https://github.com/khr898/ntfsmac.git", branch: "main"
 
-  # Source-build formula (head-only, no bottle) — every `brew install ntfsmac` runs the full
-  # build-all.sh cross-compile, not just this project's own dev machine. `xz` provides `xzcat`
-  # (vendored anylinuxfs's cc_linux script extracts its Debian sysroot packages with it);
-  # `llvm` provides `lld` (`-fuse-ld=lld`, required by krun-init-blob's build.rs). Both build-
-  # only: the installed binaries don't need either at runtime. brew audit --strict requires
-  # every string-named dependency ordered before the symbol-keyed ones below (arch:, macos:).
-  depends_on "llvm" => :build
-  depends_on "xz" => :build
+    depends_on "lld" => :build
+    depends_on "llvm" => :build
+    depends_on "util-linux" => :build
+    depends_on "xz" => :build
+  end
+
   depends_on arch: :arm64
   depends_on macos: :ventura
 
   def install
-    system "build/build-all.sh"
-    system "build/sign.sh"
+    if build.head?
+      system "build/build-all.sh"
+      system "build/sign.sh"
+    end
 
     bin.install "vendor/bin/anylinuxfs"
     libexec.install "vendor/bin/gvproxy"
