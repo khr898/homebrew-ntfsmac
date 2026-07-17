@@ -13,12 +13,17 @@ class Ntfsmac < Formula
 
     depends_on "lld" => :build
     depends_on "llvm" => :build
-    depends_on "util-linux" => :build
     depends_on "xz" => :build
   end
 
   depends_on arch: :arm64
   depends_on macos: :ventura
+  # Load-bearing at runtime, not just build time: the shipped `anylinuxfs` links libblkid at an
+  # absolute Cellar path (`otool -L` => /opt/homebrew/opt/util-linux/lib/libblkid.1.dylib). With
+  # util-linux absent it aborts under dyld before main() on every invocation, `list` included.
+  # Must stay a plain runtime dep here — not `=> :build`, and not inside `head do`, either of
+  # which leaves a default bottle install unable to run the binary it just installed.
+  depends_on "util-linux"
 
   def install
     if build.head?
@@ -89,5 +94,12 @@ class Ntfsmac < Formula
   test do
     output = shell_output("#{bin}/ntfsmac diagnose --json")
     assert_match(/"healthy"/, output)
+
+    # `diagnose` only stats the vendor binaries, so it stays green even when `anylinuxfs` cannot
+    # load at all. Actually launching the binary is what turns a missing runtime dylib into a
+    # failure here, at install time, rather than a silent "no drives found" for the user later.
+    # `--help` needs no root and no VM/rootfs init, so it exercises the dynamic linker and
+    # nothing else.
+    assert_match(/anylinuxfs/, shell_output("#{bin}/anylinuxfs --help 2>&1"))
   end
 end
