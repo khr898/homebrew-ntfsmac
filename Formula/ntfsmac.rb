@@ -3,8 +3,8 @@ class Ntfsmac < Formula
   homepage "https://github.com/khr898/ntfsmac"
   # By default, download the prebuilt CLI binaries and scripts packaged in the GitHub release
   # to make installation extremely fast and robust (no local compiler toolchains required).
-  url "https://github.com/khr898/ntfsmac/releases/download/v1.0.140726/ntfsmac-cli.tar.gz"
-  sha256 "3e1306c02318c7d79d6252a1be76983b29479a5e7fc88b187be38cdee358d9b8"
+  url "https://github.com/khr898/ntfsmac/releases/download/v1.1.020826/ntfsmac-cli.tar.gz"
+  sha256 "<FILL_SHA256>"
   license "MIT"
 
   # `brew install --HEAD` compiles from the latest main branch source code.
