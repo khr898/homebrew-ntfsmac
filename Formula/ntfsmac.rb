@@ -11,8 +11,15 @@ class Ntfsmac < Formula
   head do
     url "https://github.com/khr898/ntfsmac.git", branch: "main"
 
+    # Mirrors .github/workflows/package-dmg.yml's brew install line + setup-go +
+    # rust-toolchain. The prebuilt (non-HEAD) release path needs none of these.
+    depends_on "go" => :build
+    depends_on "gettext" => :build
     depends_on "lld" => :build
     depends_on "llvm" => :build
+    depends_on "pkg-config" => :build
+    depends_on "rustup" => :build
+    depends_on "umoci" => :build
     depends_on "util-linux" => :build
     depends_on "xz" => :build
   end
