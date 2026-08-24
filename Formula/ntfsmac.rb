@@ -13,8 +13,8 @@ class Ntfsmac < Formula
 
     # Mirrors .github/workflows/package-dmg.yml's brew install line + setup-go +
     # rust-toolchain. The prebuilt (non-HEAD) release path needs none of these.
-    depends_on "go" => :build
     depends_on "gettext" => :build
+    depends_on "go" => :build
     depends_on "lld" => :build
     depends_on "llvm" => :build
     depends_on "pkg-config" => :build
@@ -46,7 +46,16 @@ class Ntfsmac < Formula
 
     (libexec/"ntfsmac/commands").install Dir["cli/commands/*.sh"]
     (libexec/"ntfsmac/lib").install Dir["cli/lib/*.sh"]
+    (libexec/"ntfsmac/lib").install "build/lib/lock.sh"
+    (libexec/"ntfsmac").install "build/sources.lock"
+    (libexec/"ntfsmac/pf").install Dir["cli/pf/*.tmpl"]
+    if File.exist?("gui/Info.plist")
+      (libexec/"ntfsmac/lib").install "gui/Info.plist" => "product-info.plist"
+    elsif File.exist?("cli/lib/product-info.plist")
+      (libexec/"ntfsmac/lib").install "cli/lib/product-info.plist"
+    end
     Dir[libexec/"ntfsmac/commands/*.sh"].each { |f| chmod 0755, f }
+    chmod 0755, libexec/"ntfsmac/lib/lock.sh"
 
     (bin/"ntfsmac").write <<~SH
       #!/bin/bash
@@ -65,7 +74,8 @@ class Ntfsmac < Formula
 
   def post_install
     quarantined = [bin/"anylinuxfs", libexec/"gvproxy", libexec/"vmnet-helper",
-                   libexec/"vmproxy", libexec/"init-rootfs", bin/"ntfsmac"]
+                   libexec/"vmproxy", libexec/"init-rootfs", bin/"ntfsmac",
+                   libexec/"ntfsmac/lib/lock.sh"]
     quarantined.each do |f|
       next unless f.exist?
 
@@ -95,6 +105,6 @@ class Ntfsmac < Formula
 
   test do
     output = shell_output("#{bin}/ntfsmac diagnose --json")
-    assert_match(/"healthy"/, output)
+    assert_match(/"healthy":\s*true/, output)
   end
 end

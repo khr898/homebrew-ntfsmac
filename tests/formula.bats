@@ -51,6 +51,28 @@ setup() {
   [ "$status" -eq 0 ]
 }
 
+@test "stages lock.sh and sources.lock for Alpine runtime pin resolution" {
+  run grep -c 'build/lib/lock.sh' "$FORMULA"
+  [ "$status" -eq 0 ]
+  run grep -c 'build/sources.lock' "$FORMULA"
+  [ "$status" -eq 0 ]
+}
+
+@test "stages pf firewall anchor template" {
+  run grep -c 'cli/pf' "$FORMULA"
+  [ "$status" -eq 0 ]
+}
+
+@test "stages product-info.plist canonical product metadata" {
+  run grep -c 'product-info.plist' "$FORMULA"
+  [ "$status" -eq 0 ]
+}
+
+@test "test block verifies healthy: true rather than matching healthy: false" {
+  run grep -F 'assert_match(/"healthy":\s*true/' "$FORMULA"
+  [ "$status" -eq 0 ]
+}
+
 @test "brew audit --strict is clean" {
   if ! command -v brew >/dev/null 2>&1; then
     skip "brew not installed in this environment"
@@ -74,3 +96,4 @@ setup() {
 
   [ "$status" -eq 0 ]
 }
+
