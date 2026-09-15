@@ -94,6 +94,31 @@ setup() {
     brew untap khr898/ntfsmac >/dev/null 2>&1
   fi
 
+  if [[ "$status" -ne 0 && "$output" == *"Your Xcode"* && "$output" == *"is too outdated"* ]]; then
+    skip "brew audit requires newer Xcode in this local environment"
+  fi
+
+  [ "$status" -eq 0 ]
+}
+
+@test "formula post-install sets up microVM runtime and cleans stale caches safely" {
+  run grep -c 'anylinuxfs").to_s, "init"' "$FORMULA"
+  [ "$status" -eq 0 ]
+  run grep -c 'Setting up microVM environment' "$FORMULA"
+  [ "$status" -eq 0 ]
+  run grep -c 'mount -t nfs' "$FORMULA"
+  [ "$status" -eq 0 ]
+}
+
+@test "formula dispatcher provides help and uninstall commands" {
+  run grep -c 'uninstall) exec' "$FORMULA"
+  [ "$status" -eq 0 ]
+  run grep -c 'print_help' "$FORMULA"
+  [ "$status" -eq 0 ]
+}
+
+@test "formula caveats document Full Disk Access guidance" {
+  run grep -c 'Full Disk Access' "$FORMULA"
   [ "$status" -eq 0 ]
 }
 
